@@ -1,22 +1,35 @@
 import streamlit as st
 from textblob import TextBlob
 
-st.title("💬 Sentiment Chatbot")
+# define the neutral threshold
+neutral_lower=0
+neutral_upper=0.4
 
-# Take input from user
-user_input = st.text_input("Enter your message:")
+def assess_emotion(input_text):
+    # analyze the emotional tone using textblob
+    text_blob = TextBlob(input_text)
+    emotion_score = text_blob.sentiment.polarity
 
-if st.button("Analyze"):
-    if user_input.strip():
-        analysis = TextBlob(user_input)
-        polarity = analysis.sentiment.polarity
-
-        if polarity > 0:
-            st.success("😊 Sentiment:I detected your mood as Positive")
-        elif polarity < 0:
-            st.error("☹️ Sentiment:I detected your mood as Negative")
-        else:
-            st.info("😐 Sentiment:I detected your mood as Neutral")
+    # classify the emotion based on the polarity score and threshold
+    if emotion_score > neutral_upper:
+        return "positive 😊", emotion_score
+    elif emotion_score < neutral_lower:
+        return "negative 😞", emotion_score
     else:
-        st.warning("⚠️ Please enter some text.")
+        return "neutral 😐", emotion_score
 
+# streamlit ui
+st.title("🧠 sentiment analyzer")
+st.write("enter any text below to assess its emotional tone using textblob.")
+
+# text input
+user_input = st.text_area("your text:", height=150)
+
+# button to trigger analysis
+if st.button("analyze sentiment"):
+    if user_input.strip():
+        sentiment, score = assess_emotion(user_input)
+        st.success(f"**sentiment:** {sentiment}")
+        st.write(f"polarity score: `{score:.2f}`")
+    else:
+        st.warning("please enter some text to analyze.")
